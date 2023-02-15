@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="LibreOfficeLibrary" Version="1.0.7" />
+    <PackageReference Include="NPOI" Version="2.6.0" />
   </ItemGroup>
 
 </Project>

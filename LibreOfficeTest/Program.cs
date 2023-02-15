@@ -1,19 +1,43 @@
 ﻿using LibreOfficeLibrary;
+using NPOI.XWPF.UserModel;
 using System.Diagnostics;
 
 Console.WriteLine("Hello, World!");
 
 var converter = new DocumentConverter();
 
-Stopwatch sw = new Stopwatch();
+Stopwatch sw = new();
 sw.Start();
 const int count = 100;
 
-for (int i = 0; i < count; i++)
-{
-    converter.ConvertToPdf("../../../input.docx", $"../../../output{i}.pdf");
-}
+Parallel.For(0, 100, GenerateDocument);
 
 sw.Stop();
-
 Console.WriteLine($"Done! Time per file: {sw.Elapsed.TotalSeconds / count} s");
+
+void GenerateDocument(int i)
+{
+    var tempPath = $"../../../temp{i}.docx";
+
+    using (var input = File.OpenRead("../../../input.docx"))
+    {
+        using var temp = File.Create(tempPath);
+        var doc = new XWPFDocument(input);
+
+        var placeHolderDictionary = new Dictionary<string, string> {
+        { "{FirstName}", "Иван" },
+        { "{LastName}", "Иванов" } };
+
+        foreach (var para in doc.Paragraphs)
+        {
+            foreach (var placeholder in placeHolderDictionary)
+            {
+                para.ReplaceText(placeholder.Key, placeholder.Value);
+            }
+        }
+
+        doc.Write(temp);
+    }
+    converter!.ConvertToPdf(tempPath, $"../../../output{i}.pdf");
+    File.Delete(tempPath);
+}
