@@ -32,6 +32,7 @@ void GenerateDocument(int i)
         {
             foreach (var placeholder in placeHolderDictionary)
             {
+                // Примеры редактирования docx-файла: https://github.com/nissl-lab/npoi-examples/tree/main/xwpf
                 para.ReplaceText(placeholder.Key, placeholder.Value);
             }
         }
