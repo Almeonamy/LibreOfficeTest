@@ -12,4 +12,8 @@
     <PackageReference Include="NPOI" Version="2.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LibreOffice.Packages.Api\LibreOffice.Packages.Api.csproj" />
+  </ItemGroup>
+
 </Project>
