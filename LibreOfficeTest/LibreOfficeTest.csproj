@@ -8,12 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LibreOfficeLibrary" Version="1.0.7" />
+    <PackageReference Include="MediaFileProcessor" Version="1.0.1" />
     <PackageReference Include="NPOI" Version="2.6.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\LibreOffice.Packages.Api\LibreOffice.Packages.Api.csproj" />
   </ItemGroup>
 
 </Project>

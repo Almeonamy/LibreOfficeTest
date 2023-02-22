@@ -1,34 +1,26 @@
-﻿using LibreOfficeLibrary;
+﻿using MediaFileProcessor.Models.Common;
+using MediaFileProcessor.Processors;
 using NPOI.XWPF.UserModel;
 using System.Diagnostics;
-using LibreOffice.Packages.Api.Clients;
-using LibreOffice.Packages.Api.Options;
 
 Console.WriteLine("Hello, World!");
 
-//var converter = new DocumentConverter();
-
-var converter = new ConversionApiService(new ConversionServiceOptions() { Url = "https://libreoffice-api.smile-tech.study" });
+var processor = new DocumentFileProcessor();
 
 Stopwatch sw = new();
 sw.Start();
 const int count = 100;
 
-//Parallel.For(0, 100, GenerateDocument);
-
-var tasks = new List<Task>();
-for (var i = 0; i < count; i++)
-{
-    tasks.Add(GenerateViaApi(i));
-}
-//Parallel.For(0, 100, i => tasks.Add(GenerateViaApi(i)));
-await Task.WhenAll(tasks);
+Parallel.For(0, 100, async i => await GenerateDocument(i));
 
 sw.Stop();
 Console.WriteLine($"Done! Time per file: {sw.Elapsed.TotalSeconds / count} s");
 
-async Task GenerateViaApi(int i)
+
+async Task GenerateDocument(int i)
 {
+    var tempPath = $"../../../temp{i}.docx";
+
     using var input = File.OpenRead("../../../input.docx");
     var doc = new XWPFDocument(input);
 
@@ -45,38 +37,12 @@ async Task GenerateViaApi(int i)
         }
     }
 
-    using var memoryStream = new MemoryStream();
-    doc.Write(memoryStream);
-
-    var result = await converter!.Convert($"{Guid.NewGuid()}.docx", memoryStream.ToArray(), "pdf");
-    using var temp = File.Create($"../../../output{i}.pdf");
-    temp.Write(result, 0, result.Length);
+    using var stream = new MemoryStream();
+    doc.Write(stream);
+    stream.Position = 0;
+    var mediaFile = new MediaFile(stream);
+    var outputStream = await processor!.ConvertDocxToPdfAsStream(mediaFile);
+    outputStream.Position = 0;
+    var fileStream = new FileStream($"../../../output{i}.pdf", FileMode.Create);
+    await outputStream.CopyToAsync(fileStream);
 }
-
-//void GenerateDocument(int i)
-//{
-//    var tempPath = $"../../../temp{i}.docx";
-
-//    using (var input = File.OpenRead("../../../input.docx"))
-//    {
-//        using var temp = File.Create(tempPath);
-//        var doc = new XWPFDocument(input);
-
-//        var placeHolderDictionary = new Dictionary<string, string> {
-//        { "{FirstName}", "Иван" },
-//        { "{LastName}", "Иванов" } };
-
-//        foreach (var para in doc.Paragraphs)
-//        {
-//            foreach (var placeholder in placeHolderDictionary)
-//            {
-//                // Примеры редактирования docx-файла: https://github.com/nissl-lab/npoi-examples/tree/main/xwpf
-//                para.ReplaceText(placeholder.Key, placeholder.Value);
-//            }
-//        }
-
-//        doc.Write(temp);
-//    }
-//    converter!.ConvertToPdf(tempPath, $"../../../output{i}.pdf");
-//    File.Delete(tempPath);
-//}
